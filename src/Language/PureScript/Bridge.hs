@@ -35,6 +35,7 @@ import           Language.PureScript.Bridge.Primitives as Bridge (boolBridge,
                                                                   doubleBridge,
                                                                   dummyBridge,
                                                                   eitherBridge,
+                                                                  int64Bridge,
                                                                   intBridge,
                                                                   listBridge,
                                                                   mapBridge,
@@ -329,6 +330,7 @@ defaultBridge =
         <|> strMapBridge
         <|> boolBridge
         <|> intBridge
+        <|> int64Bridge
         <|> doubleBridge
         <|> tupleBridge
         <|> unitBridge

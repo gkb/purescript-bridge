@@ -12,6 +12,7 @@ module Main where
 import qualified Data.Map as Map
 import           Data.Monoid ((<>))
 import qualified Data.Text as T
+import           Data.Int (Int64)
 import           Data.Word (Word, Word64)
 import           Language.PureScript.Bridge (CustomInstance (CustomInstance),
                                              Instance (Custom),
@@ -26,6 +27,7 @@ import           Language.PureScript.Bridge (CustomInstance (CustomInstance),
                                              mkTypeInfo, moduleToText, order,
                                              renderText, sumTypeToDocs,
                                              sumTypeToModule)
+import           Language.PureScript.Bridge.PSTypes (psNumber)
 import           Language.PureScript.Bridge.TypeParameters (A, B, C, M1)
 import           NeatInterpolation (trimming, untrimming)
 import qualified RoundTripArgonautAesonGeneric.Spec (roundtripSpec)
@@ -125,8 +127,8 @@ allTests = do
                 txt = [trimming|
                         data Foo
                           = Foo
-                          | Bar Int
-                          | FooBar Int String
+                          | Bar Number
+                          | FooBar Number String
 
                         derive newtype instance (Eq Foo) => MyNTClass Foo
 
@@ -149,8 +151,8 @@ allTests = do
                 txt = [trimming|
                         data Foo
                           = Foo
-                          | Bar Int
-                          | FooBar Int String
+                          | Bar Number
+                          | FooBar Number String
 
                         instance Show Foo where
                           show a = genericShow a
@@ -169,7 +171,7 @@ allTests = do
                         (equal1 . functor . genericShow $ mkSumType @(Func A))
                 doc = vsep $ sumTypeToDocs sumType
                 txt = [trimming|
-                        data Func a = Func Int a
+                        data Func a = Func Number a
 
                         derive instance Eq1 Func
 
@@ -234,7 +236,7 @@ allTests = do
                         (mkSumType @SomeNewtype)
                 doc = vsep $ sumTypeToDocs recType'
                 txt = [trimming|
-                        newtype SomeNewtype = SomeNewtype Int
+                        newtype SomeNewtype = SomeNewtype Number
 
                         derive instance Generic SomeNewtype _
 
@@ -248,7 +250,7 @@ allTests = do
                         (mkSumType @SingleValueConstr)
                 doc = vsep $ sumTypeToDocs recType'
                 txt = [trimming|
-                        newtype SingleValueConstr = SingleValueConstr Int
+                        newtype SingleValueConstr = SingleValueConstr Number
 
                         derive instance Generic SingleValueConstr _
 
@@ -262,7 +264,7 @@ allTests = do
                       (mkSumType @SingleProduct)
                 doc = vsep $ sumTypeToDocs recType'
                 txt = [trimming|
-                      data SingleProduct = SingleProduct String Int
+                      data SingleProduct = SingleProduct String Number
 
                       derive instance Generic SingleProduct _
                       |]
@@ -350,6 +352,11 @@ allTests = do
                             , _typeParameters = []
                             }
                  in bst `shouldBe` ti
+    describe "64-bit integers bridge to Number (a PureScript Int is 32 bits)" $ do
+        it "bridges Int to Number" $
+            buildBridge defaultBridge (mkTypeInfo @Int) `shouldBe` psNumber
+        it "bridges Int64 to Number" $
+            buildBridge defaultBridge (mkTypeInfo @Int64) `shouldBe` psNumber
 
 shouldRender :: Doc -> T.Text -> Expectation
 shouldRender actual expected = renderText actual `shouldBe` T.stripEnd expected

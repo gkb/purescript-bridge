@@ -11,7 +11,7 @@ import           Language.PureScript.Bridge.Builder (BridgeData, BridgePart,
                                                      clearPackageFixUp, (<|>),
                                                      (^==))
 import           Language.PureScript.Bridge.PSTypes (psArray, psBool, psEither,
-                                                     psInt, psMap, psMaybe,
+                                                     psMap, psMaybe,
                                                      psNumber, psObject, psSet,
                                                      psString, psUnit, psWord,
                                                      psWord16, psWord32,
@@ -45,8 +45,13 @@ mapBridge = do
 dummyBridge :: (MonadReader BridgeData m) => m PSType
 dummyBridge = clearPackageFixUp
 
+-- | Haskell's Int is 64 bits wide and PureScript's Int 32: bridging one to
+-- the other silently truncates past 2^31. Number is exact to 2^53.
 intBridge :: BridgePart
-intBridge = typeName ^== "Int" >> return psInt
+intBridge = typeName ^== "Int" >> return psNumber
+
+int64Bridge :: BridgePart
+int64Bridge = typeName ^== "Int64" >> return psNumber
 
 doubleBridge :: BridgePart
 doubleBridge = typeName ^== "Double" >> return psNumber
