@@ -427,8 +427,11 @@ instanceToImportLines EncodeJsonHelper =
         , ImportLine "Data.Tuple.Nested" Nothing $ Set.singleton "(/\\)"
         , ImportLine "Data.Argonaut.Encode.Aeson" (Just "E") mempty
         , ImportLine "Data.Map" Nothing mempty
+        -- The class only, from argonaut-codecs: the json-helpers instance
+        -- uses nothing from argonaut-aeson-generic.
+        , ImportLine "Data.Argonaut.Encode.Class" Nothing
+          $ Set.fromList ["class EncodeJson", "encodeJson"]
         ]
-        <> instanceToImportLines EncodeJson
 {-|
   This relies on unpublished PureScript library `purescript-bridge-json-helpers`:
   <https://github.com/input-output-hk/purescript-bridge-json-helpers>
@@ -443,8 +446,11 @@ instanceToImportLines DecodeJsonHelper =
         , ImportLine "Data.Tuple.Nested" Nothing $ Set.singleton "(/\\)"
         , ImportLine "Data.Argonaut.Decode.Aeson" (Just "D") mempty
         , ImportLine "Data.Map" (Just "Map") mempty
+        -- The classes only, from argonaut-codecs: the json-helpers instance
+        -- uses nothing from argonaut-aeson-generic.
+        , ImportLine "Data.Argonaut.Decode.Class" Nothing
+          $ Set.fromList ["class DecodeJson", "class DecodeJsonField", "decodeJson"]
         ]
-        <> instanceToImportLines DecodeJson
 instanceToImportLines (ForeignObject _ _) =
     importsFromList
         [ ImportLine "Foreign.Class" Nothing

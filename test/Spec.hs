@@ -23,7 +23,8 @@ import           Language.PureScript.Bridge (CustomInstance (CustomInstance),
                                              TypeInfo (TypeInfo, _typeModule, _typeName, _typePackage, _typeParameters),
                                              bridgeSumType, buildBridge,
                                              defaultBridge, equal, equal1,
-                                             functor, genericShow, mkSumType,
+                                             functor, genericShow, jsonHelpers,
+                                             mkSumType,
                                              mkTypeInfo, moduleToText, order,
                                              renderText, sumTypeToDocs,
                                              sumTypeToModule)
@@ -352,6 +353,18 @@ allTests = do
                             , _typeParameters = []
                             }
                  in bst `shouldBe` ti
+    describe "json-helpers instances need nothing from argonaut-aeson-generic" $
+        it "imports the classes from argonaut-codecs and no Data.Argonaut.Aeson module" $ do
+            let bridge = buildBridge defaultBridge
+                modules = sumTypeToModule Nothing (bridgeSumType bridge (jsonHelpers (mkSumType @SingleProduct)))
+                imports = filter ("import " `T.isPrefixOf`) (concatMap (T.lines . moduleToText) (Map.elems modules))
+            filter ("import Data.Argonaut.Aeson" `T.isPrefixOf`) imports `shouldBe` []
+            filter (`elem` [ "import Data.Argonaut.Decode.Class (class DecodeJson, class DecodeJsonField, decodeJson)"
+                           , "import Data.Argonaut.Encode.Class (class EncodeJson, encodeJson)"
+                           ]) imports
+                `shouldBe` [ "import Data.Argonaut.Decode.Class (class DecodeJson, class DecodeJsonField, decodeJson)"
+                           , "import Data.Argonaut.Encode.Class (class EncodeJson, encodeJson)"
+                           ]
     describe "64-bit integers bridge to Number (a PureScript Int is 32 bits)" $ do
         it "bridges Int to Number" $
             buildBridge defaultBridge (mkTypeInfo @Int) `shouldBe` psNumber

@@ -2,7 +2,6 @@ package:
   name: json-helpers-round-trip-test
   dependencies:
     - argonaut
-    - argonaut-aeson-generic
     - argonaut-codecs
     - argonaut-core
     - console
